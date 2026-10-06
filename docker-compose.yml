@@ -1,0 +1,307 @@
+# docker-compose.yml
+# Defines the PostgreSQL database and Mosquitto MQTT broker for the MOSA platform.
+# Requires the .env file for database credentials.
+
+services:
+  loki:
+    image: grafana/loki:latest
+    container_name: mosa-loki
+    restart: unless-stopped
+    expose:
+      - "3100"
+    networks:
+      - mosa-network
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: mosa-prometheus
+    restart: unless-stopped
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+    expose:
+      - "9090"
+    networks:
+      - mosa-network
+
+  postgres:
+    image: timescale/timescaledb:latest-pg16
+    container_name: mosa-postgres
+    restart: unless-stopped
+    expose:
+      - "5432"
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - mosa-network
+
+  db-backup:
+    image: postgres:16-alpine
+    container_name: mosa-db-backup
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    entrypoint: >
+      sh -c "echo '0 2 * * * PGPASSWORD=$${POSTGRES_PASSWORD} sh /scripts/backup.sh' | crontab - && crond -f"
+    volumes:
+      - ./uploads/backups:/backups
+      - ./scripts:/scripts
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - mosa-network
+
+  nginx:
+    build:
+      context: .
+      dockerfile: nginx.Dockerfile
+    container_name: mosa-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - mosa-network
+
+  mosquitto:
+    image: eclipse-mosquitto:latest
+    container_name: mosa-mosquitto
+    restart: unless-stopped
+    ports:
+      - "8883:8883"
+      - "9001:9001"
+    volumes:
+      - ./config:/mosquitto/config
+      - mosquitto_data:/mosquitto/data
+      - mosquitto_log:/mosquitto/log
+    networks:
+      - mosa-network
+
+  zigbee2mqtt:
+    image: koenkk/zigbee2mqtt
+    container_name: mosa-zigbee2mqtt
+    restart: unless-stopped
+    volumes:
+      - ./zigbee2mqtt-data:/app/data
+      - /run/udev:/run/udev:ro
+    expose:
+      - "8080"
+    environment:
+      - TZ=Asia/Baghdad
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - mosa-network
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: mosa-grafana
+    restart: unless-stopped
+    expose:
+      - "3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GF_SECURITY_ADMIN_PASSWORD}
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./config/grafana/provisioning:/etc/grafana/provisioning
+    networks:
+      - mosa-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: mosa-redis
+    restart: unless-stopped
+    command: [ "redis-server", "--save", "900 1", "--save", "300 10", "--maxmemory", "512mb", "--maxmemory-policy", "allkeys-lru" ]
+    expose:
+      - "6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      mosa-network:
+        aliases:
+          - mosa-redis
+          - redis
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  backend:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    container_name: mosa-backend
+    restart: unless-stopped
+    environment:
+      - BACKEND_URL=${BACKEND_URL}
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@mosa-postgres:5432/${POSTGRES_DB}?schema=public
+      - MQTT_BROKER_URL=mqtts://mosa-mosquitto:8883
+      - MQTT_CLIENT_ID=mosa-backend
+      - MQTT_USERNAME=${MQTT_USERNAME}
+      - MQTT_PASSWORD=${MQTT_PASSWORD}
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID}
+      - TELEGRAM_ENABLED=${TELEGRAM_ENABLED}
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET}
+      - COOKIE_SECRET=${COOKIE_SECRET}
+      - REDIS_URL=redis://mosa-redis:6379
+      - VAPID_PUBLIC_KEY=${VAPID_PUBLIC_KEY}
+      - VAPID_PRIVATE_KEY=${VAPID_PRIVATE_KEY}
+      - USE_LOCAL_LLM=false
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - SERVER_IP=${SERVER_IP}
+      - SUPERVISOR_SECRET=${SUPERVISOR_SECRET}
+      - CLOUD_RELAY_URL=ws://mosa-relay:4000
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mosquitto:
+        condition: service_started
+      redis:
+        condition: service_healthy
+    ports:
+      - "5540:5540/udp"
+      - "51826:51826"
+    deploy:
+      resources:
+        limits:
+          # SECURITY FIX #22: Increased from 512M to 1536M
+          # 512M was causing OOM kills under normal load (subagents, file uploads, LLM inference)
+          memory: 1536M
+    volumes:
+      - ./uploads:/app/uploads
+      - ./config:/app/config
+      - ./config/certs:/app/certs
+      - ./scripts:/app/scripts
+      - ./R1_Refactored:/app/R1_Refactored
+      - adb_keys:/root/.android
+      - /etc/avahi/services:/etc/avahi/services
+    networks:
+      - mosa-network
+    healthcheck:
+      test: [ "CMD", "node", "-e", "require('http').get('http://localhost:8080/ping', (r) => process.exit(r.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))" ]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
+
+  frontend:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      args:
+        - NEXT_PUBLIC_API_URL=/api
+        - NEXT_PUBLIC_SOCKET_URL=/
+        - NEXT_PUBLIC_VAPID_PUBLIC_KEY=${VAPID_PUBLIC_KEY}
+    container_name: mosa-frontend
+    restart: unless-stopped
+    environment:
+      - NEXT_PUBLIC_API_URL=/api
+      - NEXT_PUBLIC_VAPID_PUBLIC_KEY=${VAPID_PUBLIC_KEY}
+    depends_on:
+      - backend
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+    networks:
+      - mosa-network
+
+  relay:
+    build:
+      context: .
+      dockerfile: apps/relay/Dockerfile
+    container_name: mosa-relay
+    restart: unless-stopped
+    ports:
+      - "4000:4000"
+    networks:
+      - mosa-network
+
+  docker-socket-proxy:
+    image: tecnativa/docker-socket-proxy:latest
+    container_name: mosa-socket-proxy
+    restart: unless-stopped
+    command: [ "haproxy", "-f", "/etc/haproxy/haproxy.cfg" ]
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./config/haproxy/haproxy.cfg:/etc/haproxy/haproxy.cfg:ro
+    expose:
+      - "2375"
+    networks:
+      - mosa-network
+
+  supervisor:
+    build:
+      context: ./apps/supervisor
+      dockerfile: Dockerfile
+    container_name: mosa-supervisor
+    restart: always
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      - SUPERVISOR_PORT=9001
+      - SUPERVISOR_SECRET=${SUPERVISOR_SECRET}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - DOCKER_HOST=tcp://docker-socket-proxy:2375
+    depends_on:
+      - docker-socket-proxy
+    expose:
+      - "9001"
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+    networks:
+      - mosa-network
+
+  watchtower:
+    image: containrrr/watchtower:latest
+    container_name: mosa-watchtower
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      - DOCKER_API_VERSION=1.45
+      - WATCHTOWER_CLEANUP=true
+      - WATCHTOWER_POLL_INTERVAL=3600
+      - WATCHTOWER_HTTP_API_UPDATE=true
+      - WATCHTOWER_HTTP_API_TOKEN=${WATCHTOWER_HTTP_API_TOKEN}
+      - WATCHTOWER_NO_PULL=true
+    expose:
+      - "8080"
+    networks:
+      - mosa-network
+
+volumes:
+  postgres_data:
+  mosquitto_data:
+  mosquitto_log:
+  redis_data:
+  grafana_data:
+  adb_keys:
+
+networks:
+  mosa-network:
+    driver: bridge

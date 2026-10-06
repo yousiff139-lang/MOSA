@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>دعوة للانضمام إلى المنزل الذكي</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f4f5;
+            margin: 0;
+            padding: 0;
+            direction: rtl;
+        }
+        .container {
+            max-width: 600px;
+            margin: 40px auto;
+            background-color: #ffffff;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+        }
+        .header {
+            background: linear-gradient(135deg, #2563eb, #1e40af);
+            padding: 40px 20px;
+            text-align: center;
+            color: #ffffff;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 700;
+        }
+        .content {
+            padding: 40px 30px;
+            color: #334155;
+            line-height: 1.6;
+            text-align: center;
+        }
+        .content p {
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+        .home-name {
+            font-weight: bold;
+            color: #2563eb;
+            font-size: 18px;
+        }
+        .role-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            background-color: #eff6ff;
+            color: #2563eb;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 30px;
+        }
+        .cta-button {
+            display: inline-block;
+            background-color: #2563eb;
+            color: #ffffff !important;
+            text-decoration: none;
+            padding: 14px 32px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            margin-top: 10px;
+            margin-bottom: 30px;
+            transition: background-color 0.3s ease;
+        }
+        .cta-button:hover {
+            background-color: #1d4ed8;
+        }
+        .expiry-note {
+            font-size: 13px;
+            color: #64748b;
+            background-color: #f8fafc;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+        .footer {
+            background-color: #f8fafc;
+            padding: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #94a3b8;
+            border-top: 1px solid #f1f5f9;
+        }
+        .link-raw {
+            display: block;
+            margin-top: 15px;
+            font-size: 12px;
+            word-break: break-all;
+            color: #94a3b8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>MOSA Smart Platform</h1>
+            <p style="margin-top: 10px; opacity: 0.9;">منصة التحكم الذكي بالمنزل</p>
+        </div>
+        
+        <div class="content">
+            <h2>دعوة انضمام 🏠</h2>
+            <p>لقد تمت دعوتك للانضمام إلى المنزل الذكي: <br>
+                <span class="home-name">{{HOME_NAME}}</span>
+            </p>
+            
+            <p>بصلاحية:</p>
+            <div class="role-badge">{{ROLE_NAME}}</div>
+            
+            <br>
+            
+            <a href="{{INVITE_LINK}}" class="cta-button">قبول الدعوة والانضمام</a>
+            
+            <div class="expiry-note">
+                ⚠️ <strong>ملاحظة:</strong> هذا الرابط صالح لمدة {{EXPIRY_HOURS}} ساعة فقط وسينتهي في {{EXPIRY_DATE}}.
+            </div>
+            
+            <p class="link-raw">إذا لم يعمل الزر، يمكنك نسخ هذا الرابط ولصقه في المتصفح:<br>
+            {{INVITE_LINK}}</p>
+        </div>
+        
+        <div class="footer">
+            هذه الرسالة تم إرسالها تلقائياً من منصة MOSA. إذا لم تكن تتوقع هذه الدعوة، يرجى تجاهلها.
+            <br><br>
+            &copy; 2024 MOSA Smart Platform
+        </div>
+    </div>
+</body>
+</html>

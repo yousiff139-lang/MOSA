@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  emqx1:
+    image: emqx:5.3.0
+    container_name: mosa-emqx-node1
+    environment:
+      - EMQX_NODE__NAME=emqx@node1.emqx.io
+      - EMQX_CLUSTER__DISCOVERY_STRATEGY=static
+      - EMQX_CLUSTER__STATIC__SEEDS=[emqx@node1.emqx.io,emqx@node2.emqx.io]
+      - EMQX_ALLOW_ANONYMOUS=false
+      - EMQX_AUTH__REDIS__SERVER=mosa-redis:6379
+      - EMQX_AUTH__REDIS__PASSWORD=
+      - EMQX_AUTH__REDIS__CMD=GET mqtt_user:%u
+    ports:
+      - "1883:1883"   # MQTT TCP
+      - "8083:8083"   # MQTT WS
+      - "18083:18083" # Dashboard
+    volumes:
+      - emqx1_data:/opt/emqx/data
+    networks:
+      - mosa_net
+
+  emqx2:
+    image: emqx:5.3.0
+    container_name: mosa-emqx-node2
+    environment:
+      - EMQX_NODE__NAME=emqx@node2.emqx.io
+      - EMQX_CLUSTER__DISCOVERY_STRATEGY=static
+      - EMQX_CLUSTER__STATIC__SEEDS=[emqx@node1.emqx.io,emqx@node2.emqx.io]
+      - EMQX_ALLOW_ANONYMOUS=false
+      - EMQX_AUTH__REDIS__SERVER=mosa-redis:6379
+    ports:
+      - "1884:1883"
+    volumes:
+      - emqx2_data:/opt/emqx/data
+    networks:
+      - mosa_net
+
+volumes:
+  emqx1_data:
+  emqx2_data:
+
+networks:
+  mosa_net:
+    driver: bridge

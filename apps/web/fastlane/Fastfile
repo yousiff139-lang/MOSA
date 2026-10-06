@@ -1,0 +1,37 @@
+default_platform(:android)
+
+platform :android do
+  desc "Deploy a new version to the Google Play Store"
+  lane :alpha do
+    # Build the capacitor android project
+    gradle(
+      task: "bundle",
+      build_type: "Release",
+      project_dir: "android/"
+    )
+
+    # Upload to Google Play Internal Testing Track
+    upload_to_play_store(
+      track: 'internal',
+      aab: 'android/app/build/outputs/bundle/release/app-release.aab'
+    )
+  end
+end
+
+platform :ios do
+  desc "Deploy a new version to TestFlight"
+  lane :beta do
+    # Ensure certs and profiles
+    get_certificates
+    get_provisioning_profile
+
+    # Build the iOS app
+    build_app(
+      workspace: "ios/App/App.xcworkspace",
+      scheme: "App"
+    )
+
+    # Upload to TestFlight
+    upload_to_testflight
+  end
+end

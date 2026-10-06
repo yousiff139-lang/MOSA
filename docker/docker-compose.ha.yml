@@ -1,0 +1,91 @@
+version: '3.8'
+
+services:
+  # ==========================================
+  # High Availability PostgreSQL (Primary + Replica)
+  # ==========================================
+  postgres_primary:
+    image: bitnami/postgresql:16
+    container_name: mosa-postgres-primary
+    environment:
+      - POSTGRESQL_USERNAME=mosa_user
+      - POSTGRESQL_PASSWORD=mosa_password
+      - POSTGRESQL_DATABASE=mosa_db
+      - POSTGRESQL_REPLICATION_MODE=master
+      - POSTGRESQL_REPLICATION_USER=repl_user
+      - POSTGRESQL_REPLICATION_PASSWORD=repl_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_primary_data:/bitnami/postgresql
+
+  postgres_replica:
+    image: bitnami/postgresql:16
+    container_name: mosa-postgres-replica
+    depends_on:
+      - postgres_primary
+    environment:
+      - POSTGRESQL_PASSWORD=mosa_password
+      - POSTGRESQL_MASTER_HOST=postgres_primary
+      - POSTGRESQL_MASTER_PORT_NUMBER=5432
+      - POSTGRESQL_REPLICATION_MODE=slave
+      - POSTGRESQL_REPLICATION_USER=repl_user
+      - POSTGRESQL_REPLICATION_PASSWORD=repl_password
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_replica_data:/bitnami/postgresql
+
+  # ==========================================
+  # High Availability EMQX MQTT Cluster (2 Nodes)
+  # ==========================================
+  emqx1:
+    image: emqx/emqx:5.3.2
+    container_name: mosa-emqx-node1
+    environment:
+      - "EMQX_NODE__NAME=emqx@emqx1.mosa.local"
+      - "EMQX_CLUSTER__DISCOVERY_STRATEGY=static"
+      - "EMQX_CLUSTER__STATIC__SEEDS=emqx@emqx1.mosa.local,emqx@emqx2.mosa.local"
+    ports:
+      - "1883:1883"     # MQTT Port
+      - "8083:8083"     # WebSockets Port
+      - "18083:18083"   # EMQX Dashboard Dashboard
+    networks:
+      default:
+        aliases:
+          - emqx1.mosa.local
+
+  emqx2:
+    image: emqx/emqx:5.3.2
+    container_name: mosa-emqx-node2
+    environment:
+      - "EMQX_NODE__NAME=emqx@emqx2.mosa.local"
+      - "EMQX_CLUSTER__DISCOVERY_STRATEGY=static"
+      - "EMQX_CLUSTER__STATIC__SEEDS=emqx@emqx1.mosa.local,emqx@emqx2.mosa.local"
+    ports:
+      - "1884:1883"
+      - "8084:8083"
+    networks:
+      default:
+        aliases:
+          - emqx2.mosa.local
+
+  # ==========================================
+  # Redis Cache for session management & Socket.io scaling
+  # ==========================================
+  redis_cache:
+    image: redis:7-alpine
+    container_name: mosa-redis-ha
+    command: redis-server --appendonly yes
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+volumes:
+  postgres_primary_data:
+    driver: local
+  postgres_replica_data:
+    driver: local
+  redis_data:
+    driver: local

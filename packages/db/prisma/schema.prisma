@@ -1,0 +1,843 @@
+generator client {
+  provider = "prisma-client-js"
+  binaryTargets = ["native"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ==========================================
+// Phase 1 & 4: Users, Roles & Multi-Home
+// ==========================================
+model User {
+  id        String   @id @default(uuid())
+  username  String   @unique
+  pinCode   String
+  name      String?
+  avatar    String?
+  role      String   @default("user") // System-level role (admin, user)
+  isActive  Boolean  @default(true)
+  mustChangePin Boolean @default(false)
+  phoneNumber String? @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  deletedAt     DateTime?
+  deletedBy     String?
+  deletedReason String?
+  
+  mfaEnabled      Boolean   @default(false)
+  mfaSecret       String?
+  mfaBackupCodes  String[]
+  
+  ownedHomes Home[]   @relation("HomeOwner")
+  memberships HomeMember[]
+  roomAccess  RoomAccess[]
+  sessions    Session[]
+  activityLogs ActivityLog[]
+  auditLogs    AuditLog[]
+  oauthTokens  OAuthToken[]
+  csrfTokens   CsrfToken[]
+  pushSubscriptions PushSubscription[]
+  aiConversations   AIConversation[]
+}
+
+model Session {
+  id           String   @id @default(uuid())
+  userId       String
+  refreshToken String   @unique // Hashed
+  device       String?
+  ip           String?
+  lastSeen     DateTime  @default(now())
+  expiresAt    DateTime
+  revokedAt    DateTime?
+  createdAt    DateTime @default(now())
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([refreshToken])
+  @@index([expiresAt])
+  @@index([userId, revokedAt])
+}
+
+model Home {
+  id        String   @id @default(uuid())
+  name      String
+  location  String?
+  ownerId   String
+  owner     User     @relation("HomeOwner", fields: [ownerId], references: [id])
+  energyBudgetKwh Float @default(50)
+  
+  members   HomeMember[]
+  rooms     Room[]
+  nodes     Node[]
+  scenes    Scene[]
+  routines  Routine[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  deletedAt     DateTime?
+  deletedBy     String?
+  deletedReason String?
+  
+  automations Automation[]
+  notifications Notification[]
+  apiKeys     ApiKey[]
+  floorPlans  FloorPlan[]
+  inviteTokens InviteToken[]
+  auditLogs   AuditLog[]
+  activityLogs ActivityLog[]
+  securityAlerts SecurityAlert[]
+  devices     Device[]
+  cameras     Camera[]
+  subscriptions TenantSubscription[]
+  securityState SecurityState?
+  aiConversations AIConversation[]
+}
+
+enum Role {
+  SUPER_OWNER
+  ADMIN
+  MEMBER
+  RESTRICTED
+  GUEST
+}
+
+model HomeMember {
+  id           String    @id @default(uuid())
+  homeId       String
+  userId       String
+  role         Role      @default(MEMBER)
+  
+  joinedAt     DateTime  @default(now())
+  expiresAt    DateTime? // for guests
+  restrictions Json?     // { allowedHours, viewOnly }
+  
+  roomPermissions   RoomPermission[]
+  devicePermissions DevicePermission[]
+  scenePermissions  ScenePermission[]
+  
+  home         Home      @relation(fields: [homeId], references: [id], onDelete: Cascade)
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  createdAt    DateTime  @default(now())
+  
+  deletedAt     DateTime?
+  deletedBy     String?
+  deletedReason String?
+  
+  @@unique([homeId, userId])
+}
+
+model OTP {
+  id        String   @id @default(uuid())
+  email     String
+  code      String
+  type      String   // RESET_PASSWORD, EMAIL_VERIFY, INVITE
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([email])
+}
+
+model RoomPermission {
+  id           String     @id @default(uuid())
+  homeMemberId String
+  roomId       String
+  
+  homeMember   HomeMember @relation(fields: [homeMemberId], references: [id], onDelete: Cascade)
+  room         Room       @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  
+  @@unique([homeMemberId, roomId])
+}
+
+model DevicePermission {
+  id           String     @id @default(uuid())
+  homeMemberId String
+  deviceId     String
+  
+  homeMember   HomeMember @relation(fields: [homeMemberId], references: [id], onDelete: Cascade)
+  device       Device     @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  
+  @@unique([homeMemberId, deviceId])
+}
+
+model ScenePermission {
+  id           String     @id @default(uuid())
+  homeMemberId String
+  sceneId      String
+  
+  homeMember   HomeMember @relation(fields: [homeMemberId], references: [id], onDelete: Cascade)
+  scene        Scene      @relation(fields: [sceneId], references: [id], onDelete: Cascade)
+  
+  @@unique([homeMemberId, sceneId])
+}
+
+model ActivityLog {
+  id          String   @id @default(uuid())
+  homeId      String
+  userId      String?
+  action      String
+  targetType  String
+  targetId    String
+  ipAddress   String?
+  userAgent   String?
+  metadata    Json?
+  createdAt   DateTime @default(now())
+
+  home        Home     @relation(fields: [homeId], references: [id], onDelete: Cascade)
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([homeId, createdAt(sort: Desc)])
+  @@index([homeId, targetType, targetId])
+  // PERFORMANCE FIX #4: Index for queries filtering by targetType + sorting
+  @@index([homeId, targetType, createdAt(sort: Desc)])
+}
+
+model DeviceProvisioning {
+  id          String   @id @default(uuid())
+  macAddress  String   @unique
+  pairingCode String   @unique
+  homeId      String
+  expiresAt   DateTime
+  createdAt   DateTime @default(now())
+}
+
+model DiscoveredDevice {
+  id          String   @id @default(uuid())
+  macAddress  String   @unique
+  ipAddress   String
+  deviceType  String
+  components  Json     // Array of components [{"type":"RELAY", "pin":4}]
+  lastSeen    DateTime @default(now())
+}
+
+// ==========================================
+// Smart Home Voice Assistant Integrations
+// ==========================================
+model OAuthClient {
+  id           String   @id @default(uuid())
+  clientId     String   @unique
+  clientSecret String
+  name         String   // e.g. "Amazon Alexa", "Google Home"
+  redirectUris String[] // valid redirect URIs
+  createdAt    DateTime @default(now())
+}
+
+model OAuthToken {
+  id           String   @id @default(uuid())
+  clientId     String
+  userId       String
+  accessToken  String   @unique
+  refreshToken String   @unique
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model SecurityAlert {
+  id          String   @id @default(uuid())
+  homeId      String
+  severity    String   // LOW, MEDIUM, HIGH, CRITICAL
+  type        String   // e.g., "BRUTE_FORCE", "DEVICE_SPOOF"
+  message     String
+  resolvedAt  DateTime?
+  createdAt   DateTime @default(now())
+
+  home        Home     @relation(fields: [homeId], references: [id], onDelete: Cascade)
+  @@index([homeId, resolvedAt])
+}
+
+model TenantBranding {
+  id                String   @id @default(uuid())
+  tenantId          String   @unique // links to Home id usually
+
+  // Identity
+  platformName      String   @default("Mosa Smart Platform")
+  platformNameAr    String?  @default("منصة موسى الذكية")
+  tagline           String?  
+  taglineAr         String?
+  ownerName         String   @default("Mosa Smart")
+  ownerNameAr       String?
+
+  // Logos & Media
+  logoUrl           String?  
+  logomarkUrl       String?  
+  faviconUrl        String?  
+  ogImageUrl        String?  
+  loginBgUrl        String?  
+
+  // Color Palette
+  colorPrimary      String   @default("#3b82f6")
+  colorPrimaryHover String   @default("#2563eb")
+  colorBackground   String   @default("#0a0f1e")
+  colorSurface      String   @default("#111827")
+  colorCard         String   @default("#1a2235")
+  colorBorder       String   @default("#1e293b")
+  colorSuccess      String   @default("#10b981")
+  colorDanger       String   @default("#ef4444")
+  colorWarning      String   @default("#f59e0b")
+  colorTextPrimary  String   @default("#f1f5f9")
+  colorTextSecondary String  @default("#94a3b8")
+
+  // Typography
+  fontFamily        String   @default("Inter")
+  fontFamilyAr      String   @default("Cairo")
+  
+  // Contact & Legal
+  supportEmail      String?
+  supportPhone      String?
+  websiteUrl        String?
+  privacyPolicyUrl  String?
+  termsUrl          String?
+  address           String?
+  
+  // Features Toggle (hide unwanted features)
+  showEnergyModule  Boolean  @default(true)
+  showAutomation    Boolean  @default(true)
+  showGuestAccess   Boolean  @default(true)
+  showAPIKeys       Boolean  @default(false)
+
+  // Runtime Programming Configuration
+  translations      Json?    // Custom i18n dictionary per tenant
+  uiConfig          Json?    // Sidebar & dynamic UI schemas
+  featureFlags      Json?    // Live feature toggles map
+
+  showMQTTConfig    Boolean  @default(false)
+  
+  // Custom Domain
+  customDomain      String?  
+  domainVerified    Boolean  @default(false)
+  
+  // App Store (PWA)
+  appName           String?  
+  appShortName      String?  
+  appDescription    String?
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  deletedAt     DateTime?
+  deletedBy     String?
+  deletedReason String?
+}
+
+model Room {
+  id        String   @id @default(uuid())
+  name      String
+  homeId    String
+  home      Home     @relation(fields: [homeId], references: [id], onDelete: Cascade)
+  devices   Device[]
+  
+  createdAt DateTime @default(now())
+  access    RoomAccess[]
+  permissions RoomPermission[]
+  
+  deletedAt     DateTime?
+  deletedBy     String?
+  deletedReason String?
+}
+
+model RoomAccess {
+  id        String   @id @default(uuid())
+  userId    String
+  roomId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  room      Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  @@unique([userId, roomId])
+}
+
+// ==========================================
+// Phase 2 & 3: Nodes, Devices & Auto-Discovery
+// ==========================================
+model Node {
+  id        String   @id @default(uuid())
+  mac       String   @unique
+  name      String?
+  type      String   @default("CONTROLLER") // CONTROLLER, SPEAKER, GATEWAY, SENSOR
+  ip        String?
+  firmware  String?
+  status    String   @default("offline") // online, offline, pending (for discovery)
+  protocol  String   @default("WIFI") // WIFI, ZIGBEE, MATTER
+  battery   Int?     // For battery-powered sensors
+  lifecycleState String @default("FACTORY") // FACTORY, MANUFACTURING, PROVISIONED, CLAIMED, ACTIVATED, HEALTHY, WARNING, OFFLINE, RETIRED
+  
+  homeId    String?
+  home      Home?    @relation(fields: [homeId], references: [id], onDelete: Cascade)
+  
+  devices   Device[]
+  
+  lastSeen  DateTime @default(now())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  deviceSecretHash String?
+  issuedAt            DateTime?
+  lastTokenRotation   DateTime?
+  revokedAt           DateTime?
+  trustScore          Int       @default(100)
+  
+  deletedAt     DateTime?
+  deletedBy     String?
+  deletedReason String?
+}
+
+model Device {
+  id        String   @id @default(uuid())
+  nodeId    String
+  homeId    String
+  roomId    String?
+  
+  type      String   // relay, sensor, light, pwm, smart_tv, media_player
+  name      String
+  state     Json?    // { isOn: true, brightness: 80, color: '#fff' }
+  desiredState Json? // Desired state in Device Shadow pattern
+  reportedState Json? // Reported state in Device Shadow pattern
+  pin       Int?
+  
+  // Local Network & Discovery support
+  ipAddress String?
+  protocol  String   @default("MQTT") // e.g. "MQTT", "UPNP", "WEBOS", "ROKU"
+  capabilities Json? // e.g. ["POWER", "VOLUME", "CHANNEL"]
+  
+  home      Home     @relation(fields: [homeId], references: [id], onDelete: Cascade)
+  node      Node     @relation(fields: [nodeId], references: [id], onDelete: Cascade)
+  room      Room?    @relation(fields: [roomId], references: [id], onDelete: SetNull)
+  energyLogs EnergyLog[]
+  motionLogs MotionLog[]
+  climateLogs ClimateLog[]
+  floorPlanDevices FloorPlanDevice[]
+  permissions DevicePermission[]
+  credential  DeviceCredential?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  deletedAt     DateTime?
+  deletedBy     String?
+  deletedReason String?
+
+  @@index([homeId])
+  @@index([nodeId])
+  @@index([roomId])
+  @@index([homeId, roomId])
+  @@index([homeId, deletedAt])
+  // PERFORMANCE FIX #4: Compound indexes for common query patterns
+  @@index([homeId, deletedAt, type])
+  @@index([homeId, roomId, deletedAt])
+  @@index([homeId, deletedAt, nodeId])
+}
+
+model DeviceCredential {
+  id           String   @id @default(uuid())
+  deviceId     String   @unique
+  device       Device   @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  username     String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+}
+
+// ==========================================
+// Phase 5: Automations, Scenes, Routines
+// ==========================================
+model Scene {
+  id        String   @id @default(uuid())
+  name      String
+  homeId    String
+  home      Home     @relation(fields: [homeId], references: [id], onDelete: Cascade)
+  actions   Json     // Array of device state changes
+  createdAt DateTime @default(now())
+  permissions ScenePermission[]
+  
+  deletedAt     DateTime?
+  deletedBy     String?
+  deletedReason String?
+  schedules     SceneSchedule[]
+}
+
+model SceneSchedule {
+  id             String   @id @default(uuid())
+  sceneId        String
+  cronExpression String
+  isActive       Boolean  @default(true)
+  scene          Scene    @relation(fields: [sceneId], references: [id], onDelete: Cascade)
+}
+
+model Routine {
+  id        String   @id @default(uuid())
+  name      String
+  homeId    String
+  home      Home     @relation(fields: [homeId], references: [id], onDelete: Cascade)
+  schedule  String   // Cron expression
+  actions   Json     // Array of device state changes
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
+
+model Automation {
+  id        String   @id @default(uuid())
+  homeId    String
+  home      Home     @relation(fields: [homeId], references: [id], onDelete: Cascade)
+  name      String
+  condition Json     // IF this (e.g. sensor > 30) (Legacy)
+  action    Json     // THEN that (e.g. turn on AC) (Legacy)
+  flowData  Json?    // Serialized React Flow (nodes & edges) for DAG engine
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  
+  deletedAt     DateTime?
+  deletedBy     String?
+  deletedReason String?
+  
+  @@index([homeId])
+  // PERFORMANCE FIX #4: Index for active automation queries
+  @@index([homeId, isActive, deletedAt])
+}
+
+// ==========================================
+// Phase 6: Energy & Analytics
+// ==========================================
+model EnergyLog {
+  id        String   @default(uuid())
+  deviceId  String
+  device    Device   @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  powerW    Float    // Power in Watts
+  timestamp DateTime @default(now())
+
+  @@id([id, timestamp])
+  @@index([deviceId, timestamp(sort: Desc)])
+  @@index([timestamp(sort: Desc)])
+}
+
+model ClimateLog {
+  id          String   @default(uuid())
+  deviceId    String
+  device      Device   @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  temperature Float
+  humidity    Float
+  timestamp   DateTime @default(now())
+
+  @@id([id, timestamp])
+  @@index([deviceId, timestamp(sort: Desc)])
+  @@index([timestamp(sort: Desc)])
+}
+
+// ==========================================
+// Phase 7 & 8: Notifications, Security & API
+// ==========================================
+model Notification {
+  id        String   @id @default(uuid())
+  homeId    String
+  home      Home     @relation(fields: [homeId], references: [id], onDelete: Cascade)
+  userId    String
+  title     String
+  message   String
+  type      String   // alert, info, security
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([homeId, userId])
+}
+
+model ApiKey {
+  id        String   @id @default(uuid())
+  homeId    String
+  home      Home     @relation(fields: [homeId], references: [id], onDelete: Cascade)
+  key       String   @unique
+  userId    String
+  name      String
+  createdAt DateTime @default(now())
+
+  @@index([homeId])
+}
+
+// ==========================================
+// Phase 10: Advanced Modules
+// ==========================================
+
+model MotionLog {
+  id        String   @id @default(uuid())
+  deviceId  String
+  device    Device   @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  status    String   // e.g. "DETECTED", "CLEARED"
+  timestamp DateTime @default(now())
+}
+
+model FloorPlan {
+  id        String   @id @default(uuid())
+  homeId    String
+  home      Home     @relation(fields: [homeId], references: [id], onDelete: Cascade)
+  name      String
+  imageData String?  // base64 SVG or image
+  devices   FloorPlanDevice[]
+  createdAt DateTime @default(now())
+
+  @@index([homeId])
+}
+
+model FloorPlanDevice {
+  id          String    @id @default(uuid())
+  floorPlanId String
+  floorPlan   FloorPlan @relation(fields: [floorPlanId], references: [id], onDelete: Cascade)
+  deviceId    String
+  device      Device    @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  x           Float
+  y           Float
+}
+
+// ==========================================
+// Phase 11: Settings
+// ==========================================
+
+model SystemSettings {
+  id             String   @id @default("singleton")
+  theme          String   @default("dark")
+  language       String   @default("ar")
+  retentionDays  Int      @default(30)
+  
+  telegramEnabled Boolean @default(false)
+  telegramToken   String?
+  telegramChatId  String?
+  telegramMutedUntil DateTime?
+
+  openaiApiKey    String?
+  tuyaClientId    String?
+  tuyaClientSecret String?
+  hueBridgeIp     String?
+
+  energyTariff    Float    @default(10.0)
+  energyBudget    Float    @default(50000.0)
+
+  updatedAt      DateTime @updatedAt
+}
+
+// ==========================================
+// Phase 12: OTA Updates
+// ==========================================
+
+model FirmwareVersion {
+  id          String   @id @default(uuid())
+  version     String
+  filename    String
+  fileSize    Int
+  filePath    String
+  notes       String?
+  isStable    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  signature   FirmwareSignature?
+}
+
+model CsrfToken {
+  id        String   @id @default(uuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model OtaUpdate {
+  id           String    @id @default(uuid())
+  controllerId String
+  versionId    String
+  status       String    @default("PENDING")
+  startedAt    DateTime  @default(now())
+  completedAt  DateTime?
+}
+
+// ==========================================
+// Enterprise Multi-Tenant Additions
+// ==========================================
+
+model InviteToken {
+  id        String   @id @default(uuid())
+  homeId    String
+  role      Role     @default(MEMBER)
+  tokenHash String   @unique 
+  expiresAt DateTime
+  usedAt    DateTime?
+  
+  home      Home     @relation(fields: [homeId], references: [id], onDelete: Cascade)
+  
+  @@index([homeId])
+}
+
+model AuditLog {
+  id          String   @id @default(uuid())
+  homeId      String
+  userId      String?
+  action      String   // LOGIN, LOGOUT, DEVICE_CONTROL, ROLE_CHANGE
+  resource    String   // DEVICE, USER, AUTOMATION, SECURITY
+  resourceId  String?
+  ipAddress   String?
+  userAgent   String?
+  severity    String   @default("INFO") // INFO, WARNING, CRITICAL
+  oldValues   Json?
+  newValues   Json?
+  createdAt   DateTime @default(now())
+
+  home      Home     @relation(fields: [homeId], references: [id], onDelete: Cascade)
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([homeId, createdAt(sort: Desc)])
+  @@index([action, severity])
+}
+
+model FirmwareSignature {
+  id          String   @id @default(uuid())
+  versionId   String   @unique
+  publicKey   String   // Ed25519 Public Key
+  signature   String   // Ed25519 Signature
+  algorithm   String   @default("Ed25519")
+  createdAt   DateTime @default(now())
+  
+  version     FirmwareVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
+}
+
+model SubscriptionPlan {
+  id              String   @id @default(uuid())
+  name            String   @unique
+  stripePriceId   String   @unique
+  price           Float
+  features        Json
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+}
+
+model TenantSubscription {
+  id              String   @id @default(uuid())
+  homeId          String
+  stripeSubId     String   @unique
+  stripeCustId    String
+  planId          String
+  status          String   @default("active")
+  currentPeriodEnd DateTime
+  cancelAtPeriodEnd Boolean @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  home            Home     @relation(fields: [homeId], references: [id], onDelete: Cascade)
+}
+
+model SecurityState {
+  id        String   @id @default(uuid())
+  homeId    String   @unique
+  state     String   @default("DISARMED") // ARMED_AWAY, ARMED_HOME, DISARMED
+  updatedAt DateTime @updatedAt
+  
+  home      Home     @relation(fields: [homeId], references: [id], onDelete: Cascade)
+}
+
+model Plugin {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  version     String
+  description String
+  author      String
+  code        String   // JavaScript Code for V8 Sandbox
+  isActive    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model PushSubscription {
+  id        String   @id @default(uuid())
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}
+model Camera {
+  id        String   @id @default(uuid())
+  homeId    String
+  name      String
+  rtspUrl   String
+  username  String?
+  password  String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  home      Home     @relation(fields: [homeId], references: [id], onDelete: Cascade)
+}
+
+model SystemVersion {
+  id              String   @id @default("current")
+  version         String
+  buildNumber     Int
+  channel         String   @default("stable")
+  installedAt     DateTime @default(now())
+  previousVersion String?
+  
+  // Component versions
+  platformVersion  String
+  firmwareVersion  String
+  schemaVersion    Int
+  
+  // Update state
+  updateState      String   @default("idle")
+  
+  pendingVersion   String?
+  updateStartedAt  DateTime?
+  lastCheckedAt    DateTime?
+
+  @@map("system_version")
+}
+
+model UpdateHistory {
+  id           String   @id @default(uuid())
+  fromVersion  String
+  toVersion    String
+  channel      String
+  status       String
+  
+  startedAt    DateTime @default(now())
+  completedAt  DateTime?
+  duration     Int?     // seconds
+  
+  failureReason String?
+  rolledBackAt  DateTime?
+  
+  changelog    Json     // { ar: [], en: [] }
+
+  @@map("update_history")
+}
+
+model SystemRelease {
+  id           String   @id @default(uuid())
+  version      String   @unique
+  versionCode  Int      @default(1)
+  releaseNotes String?
+  isMandatory  Boolean  @default(false)
+  isActive     Boolean  @default(true)
+  releasedAt   DateTime @default(now())
+
+  @@map("system_releases")
+}
+
+model AIConversation {
+  id               String   @id @default(uuid())
+  homeId           String
+  userId           String
+  userMessage      String   @db.Text
+  assistantReply   String   @db.Text
+  intent           String?
+  actionsExecuted  String[]
+  createdAt        DateTime @default(now())
+  
+  home Home @relation(fields: [homeId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([homeId, createdAt(sort: Desc)])
+  @@index([userId])
+  @@map("ai_conversations")
+}
+

@@ -1,0 +1,31 @@
+{
+  "name": "mosa-smart-platform",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "packageManager": "pnpm@9.15.1",
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=9.0.0"
+  },
+  "scripts": {
+    "preinstall": "node -e \"if(process.env.npm_execpath.indexOf('pnpm') === -1) throw new Error('This project requires pnpm. Run: npm install -g pnpm')\"",
+    "dev": "concurrently \"pnpm run dev -w apps/api\" \"pnpm run dev -w apps/web\" \"pnpm run dev -w apps/relay\"",
+    "build": "pnpm run build --filter '*'",
+    "test": "pnpm run test --filter '*'",
+    "db:generate": "pnpm run generate --filter @mosa/db",
+    "db:push": "pnpm run push --filter @mosa/db",
+    "db:studio": "pnpm run studio --filter @mosa/db"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  },
+  "dependencies": {
+    "@types/uuid": "^10.0.0",
+    "mqtt": "^5.15.1",
+    "uuid": "^9.0.1"
+  }
+}

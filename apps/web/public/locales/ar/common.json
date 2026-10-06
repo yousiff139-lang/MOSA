@@ -1,0 +1,169 @@
+{
+  "home": "الرئيسية",
+  "dashboard": "لوحة القيادة",
+  "main_dashboard": "لوحة القيادة الرئيسية",
+  "devices": "الأجهزة",
+  "all_devices": "جميع الأجهزة",
+  "active_devices": "الأجهزة النشطة",
+  "rooms": "الغرف",
+  "scenes": "المشاهد",
+  "settings": "الإعدادات",
+  "assistant": "المساعد",
+  "lighting": "الإنارة",
+  "climate": "التكييف",
+  "security": "الأمن",
+  "entertainment": "الترفيه",
+  
+  "turn_on": "تشغيل",
+  "turn_off": "إطفاء",
+  "turn_off_all": "إطفاء جميع الأجهزة",
+  "turn_on_all": "تشغيل جميع الأجهزة",
+  "save": "حفظ",
+  "cancel": "إلغاء",
+  "delete": "حذف",
+  "edit": "تعديل",
+  "add": "إضافة",
+  "close": "إغلاق",
+  "confirm": "تأكيد",
+  "search": "بحث",
+  "filter": "تصفية",
+  
+  "save_success": "تم الحفظ بنجاح",
+  "delete_success": "تم الحذف بنجاح",
+  "error_occurred": "حدث خطأ",
+  "loading": "جاري التحميل",
+  "no_data": "لا توجد بيانات",
+  
+  "main_living_room": "الصالة الرئيسية",
+  "living_room": "غرفة المعيشة",
+  "master_bedroom": "غرفة النوم الرئيسية",
+  "bedroom": "غرفة النوم",
+  "kitchen": "المطبخ",
+  "guest_room": "الاستقبال",
+  "bathroom": "الحمام",
+  "garden": "الحديقة",
+  "hallway": "الممر",
+  
+  "connected": "متصل",
+  "disconnected": "غير متصل",
+  "online": "متصل بالشبكة",
+  "offline": "غير متصل",
+  "status": "الحالة",
+  
+  "name": "الاسم",
+  "type": "النوع",
+  "room": "الغرفة",
+  "location": "الموقع",
+  "description": "الوصف",
+  
+  "confirm_delete": "هل أنت متأكد من الحذف؟",
+  "confirm_turn_off_all": "هل أنت متأكد من رغبتك بإطفاء جميع الأجهزة النشطة الآن؟",
+  "cannot_undo": "لا يمكن التراجع عن هذا الإجراء",
+  
+  "total_devices": "إجمالي الأجهزة",
+  "devices_count": "عدد الأجهزة",
+  "active_count": "النشطة",
+  "inactive_count": "المطفأة",
+  
+  "welcome": "مرحباً",
+  "good_morning": "صباح الخير",
+  "good_evening": "مساء الخير",
+  
+  "language": "اللغة",
+  "arabic": "العربية",
+  "english": "English",
+  "kurdish": "کوردی",
+  
+  "profile": "الملف الشخصي",
+  "logout": "تسجيل الخروج",
+  "login": "تسجيل الدخول",
+  "register": "إنشاء حساب",
+  
+  "notifications": "الإشعارات",
+  "no_notifications": "لا توجد إشعارات جديدة",
+  "mark_all_read": "تحديد الكل كمقروء",
+  
+  "help": "المساعدة",
+  "about": "حول",
+  "version": "الإصدار",
+  
+  "add_device": "إضافة جهاز",
+  "add_room": "إضافة غرفة",
+  "add_scene": "إضافة مشهد",
+  
+  "device_settings": "إعدادات الجهاز",
+  "room_settings": "إعدادات الغرفة",
+  "general_settings": "الإعدادات العامة",
+  
+  "power_consumption": "استهلاك الطاقة",
+  "energy_saving": "توفير الطاقة",
+  "automation": "الأتمتة",
+  
+  "backup": "نسخ احتياطي",
+  "restore": "استعادة",
+  "export": "تصدير",
+  "import": "استيراد",
+  
+  "user_management": "إدارة المستخدمين",
+  "permissions": "الصلاحيات",
+  "admin": "مشرف",
+  "member": "عضو",
+  "guest": "ضيف",
+  
+  "system_health": "حالة النظام",
+  "infrastructure": "البنية التحتية",
+  "network": "الشبكة",
+  
+  "ai_assistant": "المساعد الذكي",
+  "voice_control": "التحكم الصوتي",
+  "chat": "محادثة",
+  
+  "flasher": "حارق الشرائح",
+  "firmware": "البرنامج الثابت",
+  "upload": "رفع",
+  "download": "تحميل",
+  
+  "api_keys": "مفاتيح الربط",
+  "integration": "التكامل",
+  "matter": "Matter",
+  "zigbee": "Zigbee",
+  
+  "quick_actions": "إجراءات سريعة",
+  "recent_activity": "النشاط الأخير",
+  "statistics": "الإحصائيات",
+  
+  "temperature": "درجة الحرارة",
+  "humidity": "الرطوبة",
+  "brightness": "السطوع",
+  
+  "on": "مشغل",
+  "off": "مطفأ",
+  "auto": "تلقائي",
+  
+  "apply": "تطبيق",
+  "reset": "إعادة تعيين",
+  "refresh": "تحديث",
+  
+  "success": "نجح",
+  "failed": "فشل",
+  "pending": "قيد الانتظار",
+  
+  "view_details": "عرض التفاصيل",
+  "hide_details": "إخفاء التفاصيل",
+  
+  "customize": "تخصيص",
+  "reorder": "إعادة ترتيب",
+  "hide": "إخفاء",
+  "show": "إظهار",
+  
+  "color": "اللون",
+  "icon": "الأيقونة",
+  "category": "الفئة",
+  
+  "enabled": "مفعل",
+  "disabled": "معطل",
+  
+  "yes": "نعم",
+  "no": "لا",
+  "ok": "موافق"
+}

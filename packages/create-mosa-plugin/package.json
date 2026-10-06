@@ -1,0 +1,16 @@
+{
+  "name": "create-mosa-plugin",
+  "version": "1.0.0",
+  "description": "CLI tool to generate MOSA smart home plugins",
+  "main": "index.js",
+  "bin": {
+    "create-mosa-plugin": "./index.js"
+  },
+  "scripts": {
+    "start": "node index.js",
+    "build": "echo Plugin CLI Ready"
+  },
+  "dependencies": {
+    "inquirer": "^8.2.0"
+  }
+}

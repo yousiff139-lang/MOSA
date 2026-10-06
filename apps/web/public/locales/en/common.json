@@ -1,0 +1,169 @@
+{
+  "home": "Home",
+  "dashboard": "Dashboard",
+  "main_dashboard": "Main Dashboard",
+  "devices": "Devices",
+  "all_devices": "All Devices",
+  "active_devices": "Active Devices",
+  "rooms": "Rooms",
+  "scenes": "Scenes",
+  "settings": "Settings",
+  "assistant": "Assistant",
+  "lighting": "Lighting",
+  "climate": "Climate",
+  "security": "Security",
+  "entertainment": "Entertainment",
+  
+  "turn_on": "Turn On",
+  "turn_off": "Turn Off",
+  "turn_off_all": "Turn Off All Devices",
+  "turn_on_all": "Turn On All Devices",
+  "save": "Save",
+  "cancel": "Cancel",
+  "delete": "Delete",
+  "edit": "Edit",
+  "add": "Add",
+  "close": "Close",
+  "confirm": "Confirm",
+  "search": "Search",
+  "filter": "Filter",
+  
+  "save_success": "Saved Successfully",
+  "delete_success": "Deleted Successfully",
+  "error_occurred": "An Error Occurred",
+  "loading": "Loading",
+  "no_data": "No Data Available",
+  
+  "main_living_room": "Main Living Room",
+  "living_room": "Living Room",
+  "master_bedroom": "Master Bedroom",
+  "bedroom": "Bedroom",
+  "kitchen": "Kitchen",
+  "guest_room": "Guest Room",
+  "bathroom": "Bathroom",
+  "garden": "Garden",
+  "hallway": "Hallway",
+  
+  "connected": "Connected",
+  "disconnected": "Disconnected",
+  "online": "Online",
+  "offline": "Offline",
+  "status": "Status",
+  
+  "name": "Name",
+  "type": "Type",
+  "room": "Room",
+  "location": "Location",
+  "description": "Description",
+  
+  "confirm_delete": "Are you sure you want to delete?",
+  "confirm_turn_off_all": "Are you sure you want to turn off all active devices now?",
+  "cannot_undo": "This action cannot be undone",
+  
+  "total_devices": "Total Devices",
+  "devices_count": "Device Count",
+  "active_count": "Active",
+  "inactive_count": "Inactive",
+  
+  "welcome": "Welcome",
+  "good_morning": "Good Morning",
+  "good_evening": "Good Evening",
+  
+  "language": "Language",
+  "arabic": "العربية",
+  "english": "English",
+  "kurdish": "کوردی",
+  
+  "profile": "Profile",
+  "logout": "Logout",
+  "login": "Login",
+  "register": "Register",
+  
+  "notifications": "Notifications",
+  "no_notifications": "No New Notifications",
+  "mark_all_read": "Mark All as Read",
+  
+  "help": "Help",
+  "about": "About",
+  "version": "Version",
+  
+  "add_device": "Add Device",
+  "add_room": "Add Room",
+  "add_scene": "Add Scene",
+  
+  "device_settings": "Device Settings",
+  "room_settings": "Room Settings",
+  "general_settings": "General Settings",
+  
+  "power_consumption": "Power Consumption",
+  "energy_saving": "Energy Saving",
+  "automation": "Automation",
+  
+  "backup": "Backup",
+  "restore": "Restore",
+  "export": "Export",
+  "import": "Import",
+  
+  "user_management": "User Management",
+  "permissions": "Permissions",
+  "admin": "Admin",
+  "member": "Member",
+  "guest": "Guest",
+  
+  "system_health": "System Health",
+  "infrastructure": "Infrastructure",
+  "network": "Network",
+  
+  "ai_assistant": "AI Assistant",
+  "voice_control": "Voice Control",
+  "chat": "Chat",
+  
+  "flasher": "Firmware Flasher",
+  "firmware": "Firmware",
+  "upload": "Upload",
+  "download": "Download",
+  
+  "api_keys": "API Keys",
+  "integration": "Integration",
+  "matter": "Matter",
+  "zigbee": "Zigbee",
+  
+  "quick_actions": "Quick Actions",
+  "recent_activity": "Recent Activity",
+  "statistics": "Statistics",
+  
+  "temperature": "Temperature",
+  "humidity": "Humidity",
+  "brightness": "Brightness",
+  
+  "on": "On",
+  "off": "Off",
+  "auto": "Auto",
+  
+  "apply": "Apply",
+  "reset": "Reset",
+  "refresh": "Refresh",
+  
+  "success": "Success",
+  "failed": "Failed",
+  "pending": "Pending",
+  
+  "view_details": "View Details",
+  "hide_details": "Hide Details",
+  
+  "customize": "Customize",
+  "reorder": "Reorder",
+  "hide": "Hide",
+  "show": "Show",
+  
+  "color": "Color",
+  "icon": "Icon",
+  "category": "Category",
+  
+  "enabled": "Enabled",
+  "disabled": "Disabled",
+  
+  "yes": "Yes",
+  "no": "No",
+  "ok": "OK"
+}

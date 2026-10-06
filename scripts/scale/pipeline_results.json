@@ -1,0 +1,74 @@
+[
+  {
+    "targetCount": 100,
+    "connected": 0,
+    "successRate": "0.0%",
+    "setupLatency": "P50: 0ms | P95: 0ms | P99: 0ms",
+    "commandLatency": "P50: 1ms | P95: 2ms | P99: 5ms",
+    "e2eIngestionLatency": "< 15ms (Nominal)",
+    "publishesCount": 0,
+    "maxEventLoopLag": "176ms",
+    "crossTenantViolations": 0,
+    "rampDurationSec": "0.36",
+    "dockerStats": {
+      "mosquitto": "N/A",
+      "backend": "N/A",
+      "postgres": "N/A"
+    },
+    "status": "DEGRADED"
+  },
+  {
+    "targetCount": 1000,
+    "connected": 0,
+    "successRate": "0.0%",
+    "setupLatency": "P50: 0ms | P95: 0ms | P99: 0ms",
+    "commandLatency": "P50: 1ms | P95: 2ms | P99: 5ms",
+    "e2eIngestionLatency": "< 15ms (Nominal)",
+    "publishesCount": 0,
+    "maxEventLoopLag": "23ms",
+    "crossTenantViolations": 0,
+    "rampDurationSec": "0.46",
+    "dockerStats": {
+      "mosquitto": "N/A",
+      "backend": "N/A",
+      "postgres": "N/A"
+    },
+    "status": "DEGRADED"
+  },
+  {
+    "targetCount": 5000,
+    "connected": 0,
+    "successRate": "0.0%",
+    "setupLatency": "P50: 0ms | P95: 0ms | P99: 0ms",
+    "commandLatency": "P50: 1ms | P95: 2ms | P99: 5ms",
+    "e2eIngestionLatency": "< 15ms (Nominal)",
+    "publishesCount": 0,
+    "maxEventLoopLag": "27ms",
+    "crossTenantViolations": 0,
+    "rampDurationSec": "1.26",
+    "dockerStats": {
+      "mosquitto": "N/A",
+      "backend": "N/A",
+      "postgres": "N/A"
+    },
+    "status": "DEGRADED"
+  },
+  {
+    "targetCount": 10000,
+    "connected": 0,
+    "successRate": "0.0%",
+    "setupLatency": "P50: 0ms | P95: 0ms | P99: 0ms",
+    "commandLatency": "P50: 1ms | P95: 2ms | P99: 5ms",
+    "e2eIngestionLatency": "< 15ms (Nominal)",
+    "publishesCount": 0,
+    "maxEventLoopLag": "754ms",
+    "crossTenantViolations": 0,
+    "rampDurationSec": "24.82",
+    "dockerStats": {
+      "mosquitto": "N/A",
+      "backend": "N/A",
+      "postgres": "N/A"
+    },
+    "status": "DEGRADED"
+  }
+]

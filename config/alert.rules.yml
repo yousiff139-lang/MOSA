@@ -1,0 +1,32 @@
+groups:
+- name: mosa_slos
+  rules:
+  # Availability SLO: 99.9% Uptime
+  - alert: API_High_Error_Rate
+    expr: rate(http_requests_total{status=~"5.."}[5m]) / rate(http_requests_total[5m]) > 0.05
+    for: 2m
+    labels:
+      severity: critical
+    annotations:
+      summary: "High API Error Rate (>5%)"
+      description: "API is failing at a high rate, risking the 99.9% availability SLO."
+
+  # Latency SLO: API P95 < 150ms
+  - alert: API_High_Latency
+    expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 0.15
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "API P95 Latency > 150ms"
+      description: "API response times are degrading."
+
+  # System Health
+  - alert: Instance_Down
+    expr: up == 0
+    for: 1m
+    labels:
+      severity: critical
+    annotations:
+      summary: "Instance {{ $labels.instance }} down"
+      description: "Prometheus could not scrape {{ $labels.instance }} for more than 1 minute."

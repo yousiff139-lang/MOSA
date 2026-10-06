@@ -1,0 +1,157 @@
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+@layer base {
+  .theme {
+    --font-heading: var(--font-sans);
+    --font-sans: var(--font-sans);
+  }
+  :root {
+    --background: oklch(0.985 0 0); /* Light mode not used, but keeping valid */
+    --foreground: oklch(0.145 0 0);
+    --card: oklch(1 0 0);
+    --card-foreground: oklch(0.145 0 0);
+    --popover: oklch(1 0 0);
+    --popover-foreground: oklch(0.145 0 0);
+    --primary: oklch(0.6 0.15 250);
+    --primary-foreground: oklch(0.985 0 0);
+    --secondary: oklch(0.97 0 0);
+    --secondary-foreground: oklch(0.205 0 0);
+    --muted: oklch(0.97 0 0);
+    --muted-foreground: oklch(0.556 0 0);
+    --accent: oklch(0.97 0 0);
+    --accent-foreground: oklch(0.205 0 0);
+    --destructive: oklch(0.577 0.245 27.325);
+    --border: oklch(0.922 0 0);
+    --input: oklch(0.922 0 0);
+    --ring: oklch(0.708 0 0);
+    --chart-1: oklch(0.87 0 0);
+    --chart-2: oklch(0.556 0 0);
+    --chart-3: oklch(0.439 0 0);
+    --chart-4: oklch(0.371 0 0);
+    --chart-5: oklch(0.269 0 0);
+    --radius: 0.625rem;
+    --sidebar: oklch(0.985 0 0);
+    --sidebar-foreground: oklch(0.145 0 0);
+    --sidebar-primary: oklch(0.205 0 0);
+    --sidebar-primary-foreground: oklch(0.985 0 0);
+    --sidebar-accent: oklch(0.97 0 0);
+    --sidebar-accent-foreground: oklch(0.205 0 0);
+    --sidebar-border: oklch(0.922 0 0);
+    --sidebar-ring: oklch(0.708 0 0);
+  }
+  .dark {
+    --background: #0a0f1e; /* Deep Navy */
+    --foreground: #f1f5f9; /* Text Primary */
+    --card: #1a2235;       /* Elevated Surface */
+    --card-foreground: #f1f5f9;
+    --popover: #111827;    /* Dark Gray Surface */
+    --popover-foreground: #f1f5f9;
+    --primary: #3b82f6;    /* Blue */
+    --primary-foreground: #ffffff;
+    --secondary: #1e293b;  /* Subtle */
+    --secondary-foreground: #f1f5f9;
+    --muted: #1e293b;
+    --muted-foreground: #94a3b8; /* Text Secondary */
+    --accent: #2563eb;     /* Primary Hover */
+    --accent-foreground: #ffffff;
+    --destructive: #ef4444; /* Danger */
+    --border: #1e293b;     /* Subtle border */
+    --input: #1e293b;
+    --ring: #3b82f6;
+    --chart-1: #3b82f6;
+    --chart-2: #10b981;    /* Success */
+    --chart-3: #f59e0b;    /* Warning */
+    --chart-4: #ef4444;
+    --chart-5: #8b5cf6;
+    --sidebar: #0a0f1e;
+    --sidebar-foreground: #f1f5f9;
+    --sidebar-primary: #3b82f6;
+    --sidebar-primary-foreground: #ffffff;
+    --sidebar-accent: #1e293b;
+    --sidebar-accent-foreground: #f1f5f9;
+    --sidebar-border: #1e293b;
+    --sidebar-ring: #3b82f6;
+  }
+  * {
+    border-color: var(--border);
+    outline-color: hsl(var(--ring) / 0.5);
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+  }
+}
+
+@layer base {
+  .theme-zinc {
+    /* default blue/zinc glow */
+    --glow-color: rgba(59, 130, 246, 0.3);
+    --glow-color-bright: rgba(59, 130, 246, 0.6);
+  }
+  .theme-slate {
+    --primary: oklch(0.47 0.1 260);
+    --primary-foreground: oklch(0.985 0 0);
+    --glow-color: rgba(99, 102, 241, 0.3);
+    --glow-color-bright: rgba(99, 102, 241, 0.6);
+  }
+  .theme-stone {
+    --primary: oklch(0.45 0.05 60);
+    --primary-foreground: oklch(0.985 0 0);
+    --glow-color: rgba(234, 88, 12, 0.3);
+    --glow-color-bright: rgba(234, 88, 12, 0.6);
+  }
+  .theme-gray {
+    --primary: oklch(0.5 0.05 240);
+    --primary-foreground: oklch(0.985 0 0);
+    --glow-color: rgba(148, 163, 184, 0.3);
+    --glow-color-bright: rgba(148, 163, 184, 0.6);
+  }
+  .theme-blue {
+    --primary: oklch(0.6 0.15 250);
+    --glow-color: rgba(59, 130, 246, 0.4);
+    --glow-color-bright: rgba(59, 130, 246, 0.8);
+  }
+  .theme-green {
+    --primary: oklch(0.6 0.15 150);
+    --glow-color: rgba(16, 185, 129, 0.4);
+    --glow-color-bright: rgba(16, 185, 129, 0.8);
+  }
+  .theme-violet {
+    --primary: oklch(0.6 0.15 300);
+    --glow-color: rgba(139, 92, 246, 0.4);
+    --glow-color-bright: rgba(139, 92, 246, 0.8);
+  }
+
+  .glass-panel {
+    @apply bg-black/30 backdrop-blur-xl border border-white/5 shadow-2xl;
+  }
+  .glass-card {
+    @apply bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl transition-all duration-300;
+  }
+  .glow-border {
+    box-shadow: 0 0 15px var(--glow-color);
+    border-color: var(--glow-color-bright);
+  }
+  .glow-text {
+    text-shadow: 0 0 10px var(--glow-color);
+  }
+  .glow-bg {
+    background: radial-gradient(circle at top right, var(--glow-color) 0%, transparent 60%);
+  }
+  .glow-active {
+    box-shadow: 0 0 20px var(--glow-color-bright);
+    border-color: var(--glow-color-bright);
+  }
+}

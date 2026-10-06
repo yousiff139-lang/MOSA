@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  # 1. Local MQTT Broker (Mosquitto)
+  mosquitto:
+    image: eclipse-mosquitto:2
+    container_name: mosa-mosquitto
+    restart: unless-stopped
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+    volumes:
+      - ./mosquitto/config:/mosquitto/config
+      - ./mosquitto/data:/mosquitto/data
+      - ./mosquitto/log:/mosquitto/log
+    networks:
+      - mosa-net
+
+  # 2. Local Agent (Node.js Backend & API)
+  mosa-server:
+    build: 
+      context: ../
+      dockerfile: deploy/Dockerfile
+    container_name: mosa-server
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    environment:
+      - MQTT_HOST=mosquitto
+      - MQTT_USER=mosaadmin
+      - MQTT_PASS=mosa_secret_pw
+      - PORT=3001
+    depends_on:
+      - mosquitto
+    volumes:
+      # Mount the database directory to keep data persistent
+      - ./data:/app/data
+    networks:
+      - mosa-net
+
+  # 3. Cloudflare Tunnel (Optional, for Secure Remote Access)
+  # Uncomment and configure with your tunnel token once generated.
+  # cloudflared:
+  #   image: cloudflare/cloudflared:latest
+  #   container_name: mosa-tunnel
+  #   restart: unless-stopped
+  #   command: tunnel run
+  #   environment:
+  #     - TUNNEL_TOKEN=ey...YOUR_CLOUDFLARE_TOKEN_HERE...
+  #   networks:
+  #     - mosa-net
+
+networks:
+  mosa-net:
+    driver: bridge

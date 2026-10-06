@@ -1,0 +1,9 @@
+{
+  "name": "smart-home-workspace",
+  "private": true,
+  "scripts": {
+    "dev": "cd project && npm run dev",
+    "install": "cd project && npm install",
+    "build": "cd project && npm run build"
+  }
+}

@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">MOSA Smart Home</string>
+    <string name="title_activity_main">MOSA Smart Home</string>
+    <string name="package_name">com.mosa.smarthome</string>
+    <string name="custom_url_scheme">com.mosa.smarthome</string>
+</resources>

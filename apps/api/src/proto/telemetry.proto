@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package mosa;
+
+// This defines the ultra-compact binary format for ESP32 devices
+// It replaces the heavy JSON payload `{"temperature": 24.5, "isOn": true}`
+message DeviceTelemetry {
+  string device_id = 1;
+  float temperature = 2;
+  float humidity = 3;
+  bool is_on = 4;
+  int32 signal_strength = 5;
+  int64 timestamp = 6;
+}
+
+message DeviceCommand {
+  string device_id = 1;
+  string action = 2; // e.g., "TOGGLE", "SET_BRIGHTNESS"
+  int32 value = 3;
+}

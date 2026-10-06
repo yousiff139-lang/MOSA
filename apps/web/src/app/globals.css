@@ -1,0 +1,218 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: #050a16;
+    --foreground: #f1f5f9;
+    
+    --card: #0d172a;
+    --card-foreground: #f8fafc;
+    --card-border: rgba(255, 255, 255, 0.08);
+    
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    
+    --primary: #00f0ff;
+    --primary-foreground: #020617;
+    --primary-glow: rgba(0, 240, 255, 0.45);
+    
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: rgba(255, 255, 255, 0.08);
+    --input: rgba(255, 255, 255, 0.1);
+    --ring: #00f0ff;
+
+    --radius: 1rem;
+
+    /* CPO DESIGN SYSTEM TOKENS */
+    --bg-base:        #050a16;
+    --bg-surface:     #0d172a;
+    --bg-elevated:    #13223e;
+    --bg-overlay:     #1a2d52;
+
+    --border-subtle:  rgba(255, 255, 255, 0.08);
+    --border-default: rgba(255, 255, 255, 0.15);
+    --border-strong:  rgba(255, 255, 255, 0.25);
+
+    --color-primary-hover:  #00d4e3;
+
+    --color-success:        #10b981;
+    --color-success-glow:   rgba(16,185,129,0.25);
+    --color-danger:         #ef4444;
+    --color-danger-glow:    rgba(239,68,68,0.25);
+    --color-warning:        #f59e0b;
+    --color-warning-glow:   rgba(245,158,11,0.25);
+    --color-info:           #6366f1;
+
+    --text-primary:   #f8fafc;
+    --text-secondary: #94a3b8;
+    --text-muted:     #64748b;
+    --text-disabled:  #334155;
+
+    --device-on:      #10b981;
+    --device-on-bg:   rgba(16,185,129,0.15);
+    --device-off:     #64748b;
+    --device-off-bg:  rgba(100,116,139,0.10);
+    --device-pending: #f59e0b;
+    --device-offline: #ef4444;
+    --device-offline-bg: rgba(239,68,68,0.10);
+  }
+
+  .dark {
+    --background: #050a16;
+    --foreground: #f8fafc;
+    --card: #0d172a;
+    --card-foreground: #f8fafc;
+    --card-border: rgba(255, 255, 255, 0.08);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-inter), sans-serif;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-color: #050a16;
+    text-rendering: optimizeLegibility;
+    transform: translateZ(0);
+  }
+
+  html[dir="rtl"] body {
+    font-family: var(--font-cairo), sans-serif;
+  }
+  html[dir="ltr"] body {
+    font-family: var(--font-outfit), var(--font-inter), sans-serif;
+  }
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   1. HIGH-PERFORMANCE BEAUTY MODE (أعلى درجات الجمال والأناقة البصرية — 0% GPU Shaders)
+   ══════════════════════════════════════════════════════════════════════════════ */
+html:not(.performance-eco) .bg-cyber-dots {
+  background-image: 
+    radial-gradient(rgba(255, 255, 255, 0.07) 1.2px, transparent 1.2px),
+    linear-gradient(to right, rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
+  background-size: 32px 32px, 64px 64px, 64px 64px;
+  opacity: 0.35;
+}
+
+html:not(.performance-eco) .glass-panel,
+html:not(.performance-eco) .glass-card {
+  background: rgba(13, 23, 44, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.45);
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  contain: layout style paint;
+}
+
+html:not(.performance-eco) .glass-panel:hover,
+html:not(.performance-eco) .glass-card:hover {
+  transform: translateY(-2px);
+  background: rgba(18, 32, 60, 0.92);
+  border-color: rgba(0, 240, 255, 0.35);
+  box-shadow: 0 12px 36px 0 rgba(0, 0, 0, 0.55), 0 0 20px rgba(0, 240, 255, 0.12);
+}
+
+html:not(.performance-eco) .glass-glow {
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 20px var(--primary-glow) !important;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   2. ECO / LOW-POWER MODE (وضع توفير الطاقة والجهد الخفيف — 0% حركة وجهد)
+   ══════════════════════════════════════════════════════════════════════════════ */
+html.performance-eco {
+  --background: #050a16;
+}
+
+html.performance-eco .bg-cyber-dots {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  background-size: 32px 32px;
+  opacity: 0.12;
+}
+
+html.performance-eco .glass-panel,
+html.performance-eco .glass-card {
+  background: #0c1424 !important;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+  box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.3) !important;
+  transform: none !important;
+  transition: none !important;
+  contain: layout style paint;
+}
+
+html.performance-eco .glass-panel:hover,
+html.performance-eco .glass-card:hover {
+  transform: none !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.3) !important;
+}
+
+html.performance-eco * {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+}
+
+/* Mobile Phone Native Feel */
+@media (max-width: 768px), (pointer: coarse) {
+  html, body {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-overflow-scrolling: touch;
+    background-color: #050a16 !important;
+  }
+
+  .glass-panel,
+  [class*="card"],
+  [class*="Card"],
+  .glass-card {
+    background: #0d172a !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  }
+
+  input, select, textarea, button {
+    font-size: 16px !important;
+  }
+}
+
+.safe-bottom {
+  padding-bottom: max(1.5rem, env(safe-area-inset-bottom, 20px));
+}
+
+.safe-top {
+  padding-top: max(1rem, env(safe-area-inset-top, 10px));
+}

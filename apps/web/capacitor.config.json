@@ -1,0 +1,18 @@
+{
+  "appId": "io.smartiq.mosa",
+  "appName": "MOSA Smart",
+  "webDir": "out",
+  "bundledWebRuntime": false,
+  "server": {
+    "androidScheme": "https",
+    "allowNavigation": [
+      "localhost:8080",
+      "https://app.mosa.iq"
+    ]
+  },
+  "plugins": {
+    "PushNotifications": {
+      "presentationOptions": ["badge", "sound", "alert"]
+    }
+  }
+}
